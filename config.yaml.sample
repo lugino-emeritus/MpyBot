@@ -1,0 +1,36 @@
+bot_startcmd: '!mpybot'
+
+#bot_display_name: PyBotOne
+
+matrix_server:
+  base_url: 'https://matrix.org'
+  valid_cert_check: True
+  # you can find the token in e.g. the settings of riot
+  token: ''
+  user_id: '@bot:matrix.org'
+
+
+auto_join_invited_rooms: True
+# if servers are defined then only rooms of that server would be joined automatically
+#auto_join_servers: [matrix.org]
+
+# list of matrix user ids which can send 'ctl' messages
+admin_ids:
+  - '@me:matrix.org'
+
+modules:
+  - name: 'ping'
+    local_cmd: 'ping'
+    full_cmd: '!ping'
+    options:
+      text: 'Hello World'
+  - name: 'jokes'
+    full_cmd: '!joke'
+    local_cmd: joke
+    options:
+      language: de
+  - name: 'wiki'
+    full_cmd: '!wikipedia'
+    local_cmd: wiki
+    options:
+      language: de
