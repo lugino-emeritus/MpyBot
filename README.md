@@ -57,4 +57,8 @@ A admin also has following commands:
 - `!mpybotctl join roomname`: Bot joins room with given roomname
 - `!mpybotctl leave roomname`: Bot leaves room with given roomname. roomname could be this to leave current room.
 
-Maybe you have to replace !mpybot by your bot_startcmd.
+Maybe you have to replace `!mpybot` by your own bot_startcmd.
+
+#### Note:
+
+The matrix_client has no timeout while doing a request. See [here](https://github.com/matrix-org/matrix-python-sdk/pull/157).
