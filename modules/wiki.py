@@ -9,6 +9,3 @@ def msg_call(room, sender, msg, **kwargs):
 	if not msg:
 		return ''
 	return wikipedia.summary(msg)
-
-
-
