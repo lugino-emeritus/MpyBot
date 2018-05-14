@@ -81,7 +81,7 @@ class MpyBot:
 
 
 	def _process_invite(self, room_id, state=None):
-		logger.debug('received invitation to {}'.format(room_id))
+		logger.debug('received invitation to {}, state: {}'.format(room_id, state))
 		if self.auto_join_invited_rooms:
 			if self.auto_join_servers and \
 					room_id.split(':')[-1] not in self.auto_join_servers:
