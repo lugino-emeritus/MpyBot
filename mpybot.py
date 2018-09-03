@@ -81,12 +81,43 @@ class MpyBot:
 
 
 	def _process_invite(self, room_id, state=None):
-		logger.debug('received invitation to {}'.format(room_id))
+		logger.debug('received invitation to {}, state: {}'.format(room_id, state))
 		if self.auto_join_invited_rooms:
 			if self.auto_join_servers and \
 					room_id.split(':')[-1] not in self.auto_join_servers:
 				return
 			self.join_room(room_id)
+
+	def _process_message(self, roomchunk):
+		if roomchunk['sender'] == self.mcl.user_id:
+			return
+
+		age = roomchunk.get('unsigned', {}).get('age')
+		if age is None:
+			# fallback
+			age = abs(time.time() - roomchunk['origin_server_ts']/1000)
+		else:
+			age /= 1000
+
+		if age > 60:
+			logger.debug('received old message in {}, event_id: {}'.format(roomchunk['room_id'], roomchunk['event_id']))
+			return
+
+		content = roomchunk['content']
+		if content['msgtype'] == 'm.text':
+			msg = content['body'].lstrip()
+			if msg.startswith(self.bot_startcmd):
+				room = self.mcl.get_rooms()[roomchunk['room_id']]
+				msg = msg[len(self.bot_startcmd):].lstrip()
+				self._evaluate_bot_message(room, roomchunk['sender'], msg)
+			else:
+				s_msg = msg.split(' ', 1)
+				cmd = s_msg[0]
+				msg = s_msg[1] if len(s_msg) > 1 else ''
+				modulename = self._full_cmds.get(cmd)
+				if modulename:
+					room = self.mcl.get_rooms()[roomchunk['room_id']]
+					self._call_module(modulename, room, roomchunk['sender'], msg)
 
 	def _evaluate_bot_message(self, room, sender, msg):
 		if msg.startswith('ctl'):
@@ -128,6 +159,7 @@ class MpyBot:
 		if modulename:
 			self._call_module(modulename, room, sender, msg)
 
+
 	def add_module(self, moduledic):
 		try:
 			name = moduledic['name']
@@ -158,37 +190,6 @@ class MpyBot:
 				room.send_text(res)
 		except Exception as e:
 			logger.exception('Failed to call module {}'.format(modulename))
-
-	def _process_message(self, roomchunk):
-		if roomchunk['sender'] == self.mcl.user_id:
-			return
-
-		age = roomchunk.get('unsigned', {}).get('age')
-		if age is None:
-			# fallback
-			age = abs(time.time() - roomchunk['origin_server_ts']/1000)
-		else:
-			age /= 1000
-
-		if age > 60:
-			logger.debug('received old message in {}, event_id: {}'.format(roomchunk['room_id'], roomchunk['event_id']))
-			return
-
-		content = roomchunk['content']
-		if content['msgtype'] == 'm.text':
-			msg = content['body'].lstrip()
-			if msg.startswith(self.bot_startcmd):
-				room = self.mcl.get_rooms()[roomchunk['room_id']]
-				msg = msg[len(self.bot_startcmd):].lstrip()
-				self._evaluate_bot_message(room, roomchunk['sender'], msg)
-			else:
-				s_msg = msg.split(' ', 1)
-				cmd = s_msg[0]
-				msg = s_msg[1] if len(s_msg) > 1 else ''
-				modulename = self._full_cmds.get(cmd)
-				if modulename:
-					room = self.mcl.get_rooms()[roomchunk['room_id']]
-					self._call_module(modulename, room, roomchunk['sender'], msg)
 
 
 if __name__ == '__main__':

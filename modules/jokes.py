@@ -13,7 +13,6 @@ def msg_call(room, sender, msg, **kwargs):
 	return get_joke()
 
 def get_joke(language=None):
-	# pull requsts for this method are really welcome
 	if not language:
 		language = default_lang
 	try:
